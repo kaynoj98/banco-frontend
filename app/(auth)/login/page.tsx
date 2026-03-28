@@ -1,3 +1,6 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import { Landmark } from "lucide-react";
 import {
   Card,
@@ -11,6 +14,13 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function LoginPage() {
+  const router = useRouter();
+
+  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    router.push("/dashboard");
+  };
+
   return (
     <div className="flex min-h-screen bg-slate-100">
       {/* Lado izquierdo */}
@@ -49,7 +59,7 @@ export default function LoginPage() {
           </CardHeader>
 
           <CardContent>
-            <form className="space-y-5">
+            <form className="space-y-5" onSubmit={handleLogin}>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-700">
                   Correo electrónico
@@ -86,7 +96,10 @@ export default function LoginPage() {
                 </Link>
               </div>
 
-              <Button className="h-11 w-full rounded-xl bg-slate-900 hover:bg-slate-800">
+              <Button
+                type="submit"
+                className="h-11 w-full rounded-xl bg-slate-900 hover:bg-slate-800"
+              >
                 Ingresar
               </Button>
             </form>
