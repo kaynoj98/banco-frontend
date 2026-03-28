@@ -1,10 +1,20 @@
 "use client";
 
-import { Bell, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+import { Bell, LogOut, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
+import { Button } from "@/components/ui/button";
+
 export function AppHeader() {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    router.push("/login");
+  };
+
   return (
     <header className="flex h-20 items-center justify-between border-b bg-white px-6">
       <div>
@@ -31,6 +41,11 @@ export function AppHeader() {
             <p className="text-slate-500">Frontend</p>
           </div>
         </div>
+
+        <Button variant="outline" onClick={handleLogout} className="rounded-xl">
+          <LogOut className="mr-2 h-4 w-4" />
+          Salir
+        </Button>
       </div>
     </header>
   );
