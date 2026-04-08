@@ -37,8 +37,8 @@ export function AppHeader() {
             <AvatarFallback>KA</AvatarFallback>
           </Avatar>
           <div className="hidden text-sm md:block">
-            <p className="font-medium text-slate-900">Kaynoj</p>
-            <p className="text-slate-500">Frontend</p>
+            <p className="font-medium text-slate-900">Nombre de usuario</p>
+            <p className="text-slate-500">Acá el nombre</p>
           </div>
         </div>
 
