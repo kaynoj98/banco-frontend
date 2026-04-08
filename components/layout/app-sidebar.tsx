@@ -29,9 +29,9 @@ export function AppSidebar() {
           <Landmark className="h-5 w-5" />
         </div>
         <div>
-          <p className="text-sm text-slate-500">Sistema Bancario</p>
+          <p className="text-sm text-slate-500">Banca Virtual</p>
           <h1 className="text-lg font-semibold text-slate-900">
-            Banco Front-End
+            Banco Los Patitos
           </h1>
         </div>
       </div>
