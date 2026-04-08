@@ -12,23 +12,23 @@ import { Button } from "@/components/ui/button";
 const recentTransactions = [
   {
     id: 1,
-    type: "DEPÓSITO",
-    account: "Cuenta de Ahorros - 001245",
+    type: "Depósito",
+    account: "Cuenta Ahorro - 001245",
     amount: "Q 2,500.00",
-    status: "COMPLETADA",
+    status: "Completada",
     date: "28/03/2026",
   },
   {
     id: 2,
-    type: "RETIRO",
-    account: "Cuenta de Ahorros - 001245",
+    type: "Retiro",
+    account: "Cuenta Corriente - 001874",
     amount: "Q 850.00",
     status: "Completada",
     date: "28/03/2026",
   },
   {
     id: 3,
-    type: "TRANSFERENCIA",
+    type: "Transferencia",
     account: "Cuenta Empresarial - 009921",
     amount: "Q 5,200.00",
     status: "Pendiente",
@@ -36,12 +36,19 @@ const recentTransactions = [
   },
 ];
 
-const cuentasBancarias = [
+const bankAccounts = [
   {
     id: 1,
-    name: "Cuenta de Ahorros - 001245",
+    name: "Cuenta de Ahorro",
     number: "**** 2451",
-    balance: "Q 18,800.00",
+    balance: "Q 18,450.00",
+    status: "Activa",
+  },
+  {
+    id: 2,
+    name: "Cuenta Corriente",
+    number: "**** 8742",
+    balance: "Q 42,800.00",
     status: "Activa",
   },
 ];
@@ -49,14 +56,12 @@ const cuentasBancarias = [
 export default function DashboardPage() {
   return (
     <div className="space-y-6">
-      {/* Encabezado del dashboard */}
+      {/* Encabezado */}
       <section className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">
-            Información General
-          </h1>
+          <h1 className="text-3xl font-bold text-slate-900">Dashboard</h1>
           <p className="text-sm text-slate-500">
-            Resumen y actividad reciente.
+            Resumen general del sistema bancario y actividad reciente.
           </p>
         </div>
 
@@ -118,7 +123,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-slate-500">
-              Operaciones de déposito procesadas
+              Operaciones de depósito procesadas
             </p>
           </CardContent>
         </Card>
@@ -141,7 +146,7 @@ export default function DashboardPage() {
         </Card>
       </section>
 
-      {/* Panel Principal */}
+      {/* Panel principal */}
       <section className="grid gap-6 xl:grid-cols-3">
         {/* Actividad reciente */}
         <Card className="xl:col-span-2 rounded-2xl shadow-sm">
@@ -192,7 +197,7 @@ export default function DashboardPage() {
           </CardHeader>
 
           <CardContent className="space-y-4">
-            {cuentasBancarias.map((account) => (
+            {bankAccounts.map((account) => (
               <div key={account.id} className="rounded-xl border p-4">
                 <div className="flex items-center justify-between">
                   <p className="font-medium text-slate-900">{account.name}</p>
