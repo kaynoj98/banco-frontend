@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState, type SyntheticEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Landmark } from "lucide-react";
 import {
@@ -12,13 +13,48 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { login } from "@/lib/api";
+import {
+  getAuthRole,
+  getAuthToken,
+  getHomePathForRole,
+  setAuthSession,
+} from "@/lib/auth";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    router.push("/dashboard");
+  useEffect(() => {
+    if (getAuthToken()) {
+      router.replace(getHomePathForRole(getAuthRole()));
+    }
+  }, [router]);
+
+  const handleLogin = (event: SyntheticEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    void (async () => {
+      try {
+        const response = await login({ email, password });
+        setAuthSession({
+          token: response.token,
+          role: response.role,
+          fullName: response.fullName,
+        });
+        router.push(getHomePathForRole(response.role));
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Error al iniciar sesión";
+        setError(message);
+      } finally {
+        setLoading(false);
+      }
+    })();
   };
 
   return (
@@ -61,37 +97,41 @@ export default function LoginPage() {
           <CardContent>
             <form className="space-y-5" onSubmit={handleLogin}>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">
+                <label htmlFor="email" className="text-sm font-medium text-slate-700">
                   Correo electrónico
                 </label>
                 <Input
+                  id="email"
                   type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
                   placeholder="ejemplo@correo.com"
                   className="h-11 rounded-xl"
+                  required
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">
+                <label htmlFor="password" className="text-sm font-medium text-slate-700">
                   Contraseña
                 </label>
                 <Input
+                  id="password"
                   type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
                   placeholder="••••••••"
                   className="h-11 rounded-xl"
+                  required
                 />
               </div>
 
-              <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center gap-2 text-slate-600">
-                  <input type="checkbox" className="rounded border-slate-300" />
-                  Recordarme
-                </label>
+              {error ? (
+                <p className="text-sm text-red-600">{error}</p>
+              ) : null}
 
-                <Link
-                  href="#"
-                  className="font-medium text-slate-900 hover:underline"
-                >
+              <div className="flex items-center justify-end text-sm">
+                <Link href="#" className="font-medium text-slate-900 hover:underline">
                   ¿Olvide mi contraseña?
                 </Link>
               </div>
@@ -99,8 +139,9 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 className="h-11 w-full rounded-xl bg-slate-900 hover:bg-slate-800"
+                disabled={loading}
               >
-                Ingresar
+                {loading ? "Ingresando..." : "Ingresar"}
               </Button>
             </form>
           </CardContent>

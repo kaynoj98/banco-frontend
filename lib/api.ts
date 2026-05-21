@@ -1,0 +1,179 @@
+import { getAuthToken } from "./auth";
+
+export type LoginRequestDto = {
+  email: string;
+  password: string;
+};
+
+export type LoginResponseDto = {
+  token: string;
+  role: string;
+  userId: string;
+  fullName: string;
+  expiresAt: string;
+};
+
+export type UserResponseDto = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+  createdAt: string;
+};
+
+export type AccountResponseDto = {
+  id: string;
+  userId: string;
+  ownerFullName: string;
+  accountNumber: string;
+  accountType: string;
+  balance: number;
+};
+
+export type TransactionResponseDto = {
+  id: string;
+  sourceAccountId: string | null;
+  sourceAccountNumber: string | null;
+  destinationAccountId: string | null;
+  destinationAccountNumber: string | null;
+  amount: number;
+  transactionType: string;
+  executedById: string;
+  executedByName: string;
+  timestamp: string;
+};
+
+export type TransferRequestDto = {
+  sourceAccountId: string;
+  destinationAccountId: string;
+  amount: number;
+};
+export type AccountRequestResponseDto = {
+  id: string;
+  userId: string;
+  userFullName: string;
+  accountType: string;
+  initialBalance: number;
+  status: string;
+  reviewedById?: string | null;
+  reviewedAt?: string | null;
+  note?: string | null;
+};
+
+type ApiErrorBody = {
+  message?: string;
+};
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api";
+
+async function parseError(response: Response) {
+  const body = (await response.json().catch(() => null)) as ApiErrorBody | null;
+  return body?.message || response.statusText || "Error en la API";
+}
+
+async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers as Record<string, string>),
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(await parseError(response));
+  }
+
+  return response.json();
+}
+
+export async function apiFetchAuth<T>(path: string, options: RequestInit = {}) {
+  const token = getAuthToken();
+
+  if (!token) {
+    throw new Error("No estás autenticado");
+  }
+
+  return apiFetch<T>(path, {
+    ...options,
+    headers: {
+      ...(options.headers as Record<string, string>),
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export async function login(dto: LoginRequestDto): Promise<LoginResponseDto> {
+  return apiFetch<LoginResponseDto>("/auth/login", {
+    method: "POST",
+    body: JSON.stringify(dto),
+  });
+}
+
+export async function fetchMe(): Promise<UserResponseDto> {
+  return apiFetchAuth<UserResponseDto>("/users/me");
+}
+
+export async function fetchUsers(): Promise<UserResponseDto[]> {
+  return apiFetchAuth<UserResponseDto[]>("/users");
+}
+
+export async function fetchAccounts(): Promise<AccountResponseDto[]> {
+  return apiFetchAuth<AccountResponseDto[]>("/accounts");
+}
+
+export type CreateAccountRequestDto = {
+  userId: string;
+  accountType: string;
+  initialBalance: number;
+};
+
+export async function createAccount(dto: CreateAccountRequestDto): Promise<AccountResponseDto> {
+  return apiFetchAuth<AccountResponseDto>("/accounts", {
+    method: "POST",
+    body: JSON.stringify(dto),
+  });
+}
+
+export async function fetchMyAccounts(): Promise<AccountResponseDto[]> {
+  return apiFetchAuth<AccountResponseDto[]>("/accounts/my-accounts");
+}
+
+export async function fetchAllTransactions(): Promise<TransactionResponseDto[]> {
+  return apiFetchAuth<TransactionResponseDto[]>("/transactions");
+}
+
+export async function fetchAccountTransactions(accountId: string): Promise<TransactionResponseDto[]> {
+  return apiFetchAuth<TransactionResponseDto[]>(`/transactions/account/${accountId}`);
+}
+
+export async function createTransfer(dto: TransferRequestDto): Promise<TransactionResponseDto> {
+  return apiFetchAuth<TransactionResponseDto>("/transactions/transfer", {
+    method: "POST",
+    body: JSON.stringify(dto),
+  });
+}
+
+export async function createAccountRequest(dto: CreateAccountRequestDto): Promise<AccountRequestResponseDto> {
+  return apiFetchAuth<AccountRequestResponseDto>("/accountrequests" , {
+    method: "POST",
+    body: JSON.stringify(dto),
+  });
+}
+
+export async function fetchAccountRequests(): Promise<AccountRequestResponseDto[]> {
+  return apiFetchAuth<AccountRequestResponseDto[]>("/accountrequests");
+}
+
+export async function approveAccountRequest(id: string): Promise<AccountRequestResponseDto> {
+  return apiFetchAuth<AccountRequestResponseDto>(`/accountrequests/${id}/approve`, { method: "POST" });
+}
+
+export async function rejectAccountRequest(id: string, reason?: string): Promise<AccountRequestResponseDto> {
+  return apiFetchAuth<AccountRequestResponseDto>(`/accountrequests/${id}/reject`, {
+    method: "POST",
+    body: reason ? JSON.stringify(reason) : undefined,
+  });
+}
