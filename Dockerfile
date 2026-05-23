@@ -1,28 +1,34 @@
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 WORKDIR /app
+RUN corepack enable pnpm
+COPY package.json pnpm-lock.yaml .npmrc* ./
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
-COPY package.json package-lock.json ./
-RUN npm ci
-
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
+RUN corepack enable pnpm
 ARG NEXT_PUBLIC_API_BASE_URL=/api
 ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_PUBLIC_API_BASE_URL=/api
 
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/package-lock.json ./package-lock.json
-COPY --from=builder /app/.next ./.next
+
 COPY --from=builder /app/public ./public
-COPY --from=deps /app/node_modules ./node_modules
-RUN npm prune --production
+
+COPY --from=builder /app/.next/standalone ./
+
+COPY --from=builder /app/.next/static ./.next/static
 
 EXPOSE 3000
-CMD ["npm", "start"]
+ENV PORT=3000
+
+ENV HOSTNAME="0.0.0.0" 
+
+CMD ["node", "server.js"]
