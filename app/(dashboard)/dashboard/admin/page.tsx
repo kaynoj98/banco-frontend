@@ -18,6 +18,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { RBACManager } from "@/components/admin/rbac-manager";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("es-GT", {
@@ -56,6 +59,11 @@ export default function AdminDashboardPage() {
   const [requests, setRequests] = useState<AccountRequestResponseDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [creatingUser, setCreatingUser] = useState(false);
+  const [newUserFirstName, setNewUserFirstName] = useState("");
+  const [newUserLastName, setNewUserLastName] = useState("");
+  const [newUserEmail, setNewUserEmail] = useState("");
+  const [newUserPassword, setNewUserPassword] = useState("");
 
   useEffect(() => {
     async function loadData() {
@@ -101,6 +109,65 @@ export default function AdminDashboardPage() {
       return accumulator;
     }, {});
   }, [users]);
+
+  let requestsContent: React.ReactNode;
+
+  if (loading) {
+    requestsContent = <p className="text-sm text-slate-500">Cargando solicitudes...</p>;
+  } else if (requests.length === 0) {
+    requestsContent = (
+      <div className="rounded-2xl border border-dashed border-slate-300 p-6 text-sm text-slate-500">
+        No hay solicitudes nuevas.
+      </div>
+    );
+  } else {
+    requestsContent = (
+      <div className="space-y-3">
+        {requests.map((r) => (
+          <div key={r.id} className="flex items-center justify-between rounded-lg border p-3">
+            <div>
+              <div className="font-medium">
+                {r.userFullName} — {r.accountType}
+              </div>
+              <div className="text-sm text-slate-500">Depósito inicial: {r.initialBalance}</div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                className="rounded-md bg-emerald-600 px-3 py-1 text-white"
+                onClick={async () => {
+                  try {
+                    await approveAccountRequest(r.id);
+                    const refreshed = await fetchAccountRequests();
+                    setRequests(refreshed);
+                    const refreshedAccounts = await fetchAccounts();
+                    setAccounts(refreshedAccounts);
+                  } catch (err) {
+                    alert(err instanceof Error ? err.message : String(err));
+                  }
+                }}
+              >
+                Aprobar
+              </button>
+              <button
+                className="rounded-md bg-rose-600 px-3 py-1 text-white"
+                onClick={async () => {
+                  try {
+                    await rejectAccountRequest(r.id, "Rechazado por admin");
+                    const refreshed = await fetchAccountRequests();
+                    setRequests(refreshed);
+                  } catch (err) {
+                    alert(err instanceof Error ? err.message : String(err));
+                  }
+                }}
+              >
+                Rechazar
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -169,6 +236,57 @@ export default function AdminDashboardPage() {
             <CardDescription>Lista de usuarios y su cantidad de cuentas asociadas.</CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-4">
+              <div>
+                <label className="text-sm text-slate-600">Nombre</label>
+                <Input value={newUserFirstName} onChange={(e) => setNewUserFirstName((e.target as HTMLInputElement).value)} placeholder="Nombre" />
+              </div>
+              <div>
+                <label className="text-sm text-slate-600">Apellido</label>
+                <Input value={newUserLastName} onChange={(e) => setNewUserLastName((e.target as HTMLInputElement).value)} placeholder="Apellido" />
+              </div>
+              <div>
+                <label className="text-sm text-slate-600">Correo</label>
+                <Input value={newUserEmail} onChange={(e) => setNewUserEmail((e.target as HTMLInputElement).value)} placeholder="correo@ejemplo.com" />
+              </div>
+              <div className="flex items-end">
+                <div className="w-full">
+                  <label className="text-sm text-slate-600">Contraseña</label>
+                  <Input type="password" value={newUserPassword} onChange={(e) => setNewUserPassword((e.target as HTMLInputElement).value)} placeholder="Contraseña" />
+                </div>
+              </div>
+            </div>
+            <div className="mb-4">
+              <Button
+                onClick={async () => {
+                  try {
+                    setCreatingUser(true);
+                    // Force role Cliente when creating from admin form
+                    await (await import("@/lib/api")).createUser({
+                      firstName: newUserFirstName,
+                      lastName: newUserLastName,
+                      email: newUserEmail,
+                      password: newUserPassword,
+                      role: "Cliente",
+                    });
+                    const refreshed = await fetchUsers();
+                    setUsers(refreshed);
+                    setNewUserFirstName("");
+                    setNewUserLastName("");
+                    setNewUserEmail("");
+                    setNewUserPassword("");
+                    setError(null);
+                  } catch (err) {
+                    setError(err instanceof Error ? err.message : String(err));
+                  } finally {
+                    setCreatingUser(false);
+                  }
+                }}
+                disabled={creatingUser || !newUserFirstName.trim() || !newUserLastName.trim() || !newUserEmail.trim() || !newUserPassword}
+              >
+                {creatingUser ? "Creando..." : "Crear cliente"}
+              </Button>
+            </div>
             {loading ? (
               <p className="text-sm text-slate-500">Cargando usuarios...</p>
             ) : (
@@ -210,8 +328,9 @@ export default function AdminDashboardPage() {
           <CardContent>
             <div className="mb-4 grid grid-cols-1 gap-3 md:grid-cols-4">
               <div className="md:col-span-1">
-                <label className="block text-sm text-slate-600">Titular</label>
+                <label htmlFor="account-user" className="block text-sm text-slate-600">Titular</label>
                 <select
+                  id="account-user"
                   className="mt-1 block w-full rounded-md border p-2"
                   value={newAccountUserId}
                   onChange={(e) => setNewAccountUserId(e.target.value)}
@@ -224,16 +343,16 @@ export default function AdminDashboardPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-slate-600">Tipo</label>
-                <select className="mt-1 block w-full rounded-md border p-2" value={newAccountType} onChange={(e) => setNewAccountType(e.target.value)}>
+                <label htmlFor="account-type" className="block text-sm text-slate-600">Tipo</label>
+                <select id="account-type" className="mt-1 block w-full rounded-md border p-2" value={newAccountType} onChange={(e) => setNewAccountType(e.target.value)}>
                   <option value="Corriente">Corriente</option>
                   <option value="Ahorro">Ahorro</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm text-slate-600">Depósito inicial</label>
-                <input className="mt-1 block w-full rounded-md border p-2" type="number" min={0} step="0.01" value={newAccountInitial} onChange={(e) => setNewAccountInitial(Number(e.target.value))} />
+                <label htmlFor="account-initial-balance" className="block text-sm text-slate-600">Depósito inicial</label>
+                <input id="account-initial-balance" className="mt-1 block w-full rounded-md border p-2" type="number" min={0} step="0.01" value={newAccountInitial} onChange={(e) => setNewAccountInitial(Number(e.target.value))} />
               </div>
 
               <div className="flex items-end">
@@ -339,47 +458,12 @@ export default function AdminDashboardPage() {
                 <CardDescription>Revisa y procesa las solicitudes enviadas por clientes.</CardDescription>
               </CardHeader>
               <CardContent>
-                {loading ? (
-                  <p className="text-sm text-slate-500">Cargando solicitudes...</p>
-                ) : requests.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-slate-300 p-6 text-sm text-slate-500">No hay solicitudes nuevas.</div>
-                ) : (
-                  <div className="space-y-3">
-                    {requests.map((r) => (
-                      <div key={r.id} className="flex items-center justify-between rounded-lg border p-3">
-                        <div>
-                          <div className="font-medium">{r.userFullName} — {r.accountType}</div>
-                          <div className="text-sm text-slate-500">Depósito inicial: {r.initialBalance}</div>
-                        </div>
-                        <div className="flex gap-2">
-                          <button className="rounded-md bg-emerald-600 px-3 py-1 text-white" onClick={async () => {
-                            try {
-                              await approveAccountRequest(r.id);
-                              const refreshed = await fetchAccountRequests();
-                              setRequests(refreshed);
-                              const refreshedAccounts = await fetchAccounts();
-                              setAccounts(refreshedAccounts);
-                            } catch (err) {
-                              alert(err instanceof Error ? err.message : String(err));
-                            }
-                          }}>Aprobar</button>
-                          <button className="rounded-md bg-rose-600 px-3 py-1 text-white" onClick={async () => {
-                            try {
-                              await rejectAccountRequest(r.id, "Rechazado por admin");
-                              const refreshed = await fetchAccountRequests();
-                              setRequests(refreshed);
-                            } catch (err) {
-                              alert(err instanceof Error ? err.message : String(err));
-                            }
-                          }}>Rechazar</button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {requestsContent}
               </CardContent>
             </Card>
           </section>
+
+      <RBACManager />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import {
   fetchMe,
   fetchMyAccounts,
   createAccountRequest,
+  fetchAccountByNumber,
   type AccountResponseDto,
   type TransactionResponseDto,
 } from "@/lib/api";
@@ -38,6 +39,9 @@ export default function ClientDashboardPage() {
   const [transactions, setTransactions] = useState<TransactionResponseDto[]>([]);
   const [sourceAccountId, setSourceAccountId] = useState("");
   const [destinationAccountId, setDestinationAccountId] = useState("");
+  const [destinationAccountNumber, setDestinationAccountNumber] = useState("");
+  const [destinationLookupName, setDestinationLookupName] = useState<string | null>(null);
+  const [destinationLookupLoading, setDestinationLookupLoading] = useState(false);
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -89,11 +93,13 @@ export default function ClientDashboardPage() {
 
     if (!sourceAccountId || !destinationAccountId) {
       setError("Debes seleccionar dos cuentas para transferir.");
+      alert("Debes seleccionar dos cuentas para transferir.");
       return;
     }
 
     if (sourceAccountId === destinationAccountId) {
       setError("La cuenta de origen y destino no pueden ser iguales.");
+      alert("La cuenta de origen y destino no pueden ser iguales.");
       return;
     }
 
@@ -101,6 +107,7 @@ export default function ClientDashboardPage() {
 
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
       setError("Ingresa un monto valido.");
+      alert("Ingresa un monto valido.");
       return;
     }
 
@@ -113,14 +120,40 @@ export default function ClientDashboardPage() {
           amount: parsedAmount,
         });
         setAmount("");
+        // Clear selected accounts and lookup fields so the form is reset
+        setSourceAccountId("");
+        setDestinationAccountId("");
+        setDestinationAccountNumber("");
+        setDestinationLookupName(null);
         setSuccess("Transferencia realizada correctamente.");
+        // Inform the user with a native alert as requested
+        alert("Transferencia realizada correctamente.");
         await loadData();
       } catch (transferError) {
-        setError(transferError instanceof Error ? transferError.message : "No se pudo completar la transferencia");
+        const msg = transferError instanceof Error ? transferError.message : "No se pudo completar la transferencia";
+        setError(msg);
+        // Notify user with alert for errors (insufficient funds, server errors, etc.)
+        alert(msg);
       } finally {
         setSubmitting(false);
       }
     })();
+  };
+
+  const handleResolveDestination = async () => {
+    if (!destinationAccountNumber) return;
+    try {
+      setDestinationLookupLoading(true);
+      setDestinationLookupName(null);
+      const acc = await fetchAccountByNumber(destinationAccountNumber.trim());
+      setDestinationAccountId(acc.id);
+      setDestinationLookupName(acc.ownerFullName || null);
+    } catch (err) {
+      setDestinationLookupName(null);
+      setError(err instanceof Error ? err.message : "No se encontro la cuenta");
+    } finally {
+      setDestinationLookupLoading(false);
+    }
   };
 
   const [reqType, setReqType] = useState("Corriente");
@@ -327,15 +360,23 @@ export default function ClientDashboardPage() {
               </label>
 
               <label className="space-y-2 text-sm">
-                <span className="font-medium text-slate-700">Cuenta destino</span>
-                <select className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2" value={destinationAccountId} onChange={(event) => setDestinationAccountId(event.target.value)} required>
-                  <option value="">Selecciona una cuenta</option>
-                  {accounts.map((account) => (
-                    <option key={account.id} value={account.id}>
-                      {account.accountNumber} - {account.accountType}
-                    </option>
-                  ))}
-                </select>
+                <span className="font-medium text-slate-700">Cuenta destino (número)</span>
+                <Input
+                  type="text"
+                  value={destinationAccountNumber}
+                  onChange={(e) => setDestinationAccountNumber(e.target.value)}
+                  placeholder="Ejemplo: 00123456789"
+                  className="h-11 rounded-xl"
+                />
+                <div className="flex gap-2 mt-2">
+                  <Button type="button" onClick={handleResolveDestination} disabled={destinationLookupLoading} className="h-9">
+                    {destinationLookupLoading ? "Buscando..." : "Buscar por número"}
+                  </Button>
+                  <Button type="button" onClick={() => { setDestinationAccountNumber(""); setDestinationAccountId(""); setDestinationLookupName(null); }} variant="ghost" className="h-9">
+                    Limpiar
+                  </Button>
+                </div>
+                {destinationLookupName ? <p className="text-xs text-slate-500 mt-2">Titular: {destinationLookupName}</p> : null}
               </label>
 
               <label className="space-y-2 text-sm">

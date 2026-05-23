@@ -9,6 +9,7 @@ import {
   CreditCard,
   Receipt,
   Repeat2,
+  Shield,
 } from "lucide-react";
 import { getAuthRole } from "@/lib/auth";
 
@@ -17,6 +18,7 @@ const adminMenu = [
   { name: "Usuarios", href: "/dashboard/admin#usuarios", icon: Users },
   { name: "Cuentas", href: "/dashboard/admin#cuentas", icon: CreditCard },
   { name: "Transacciones", href: "/dashboard/admin#transacciones", icon: Receipt },
+  { name: "Roles y permisos", href: "/dashboard/admin#roles-permisos", icon: Shield },
 ];
 
 const clientMenu = [

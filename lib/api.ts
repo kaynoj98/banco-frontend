@@ -61,6 +61,45 @@ export type AccountRequestResponseDto = {
   note?: string | null;
 };
 
+export type PermissionSummaryDto = {
+  id: string;
+  code: string;
+  description: string;
+};
+
+export type RoleResponseDto = {
+  id: string;
+  name: string;
+  description: string;
+  isActive: boolean;
+  permissions: PermissionSummaryDto[];
+};
+
+export type CreateRoleDto = {
+  name: string;
+  description: string;
+};
+
+export type UpdateRoleDto = {
+  name: string;
+  description: string;
+  isActive: boolean;
+};
+
+export type UpdateRolePermissionsDto = {
+  permissionIds: string[];
+};
+
+export type CreatePermissionDto = {
+  code: string;
+  description: string;
+};
+
+export type UpdatePermissionDto = {
+  code: string;
+  description: string;
+};
+
 type ApiErrorBody = {
   message?: string;
 };
@@ -176,4 +215,74 @@ export async function rejectAccountRequest(id: string, reason?: string): Promise
     method: "POST",
     body: reason ? JSON.stringify(reason) : undefined,
   });
+}
+
+export async function fetchRoles(): Promise<RoleResponseDto[]> {
+  return apiFetchAuth<RoleResponseDto[]>("/roles");
+}
+
+export async function createRole(dto: CreateRoleDto): Promise<RoleResponseDto> {
+  return apiFetchAuth<RoleResponseDto>("/roles", {
+    method: "POST",
+    body: JSON.stringify(dto),
+  });
+}
+
+export async function updateRole(id: string, dto: UpdateRoleDto): Promise<RoleResponseDto> {
+  return apiFetchAuth<RoleResponseDto>(`/roles/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(dto),
+  });
+}
+
+export async function deleteRole(id: string): Promise<void> {
+  await apiFetchAuth<void>(`/roles/${id}`, { method: "DELETE" });
+}
+
+export async function updateRolePermissions(id: string, dto: UpdateRolePermissionsDto): Promise<RoleResponseDto> {
+  return apiFetchAuth<RoleResponseDto>(`/roles/${id}/permissions`, {
+    method: "PUT",
+    body: JSON.stringify(dto),
+  });
+}
+
+export async function fetchPermissions(): Promise<PermissionSummaryDto[]> {
+  return apiFetchAuth<PermissionSummaryDto[]>("/permissions");
+}
+
+export async function createPermission(dto: CreatePermissionDto): Promise<PermissionSummaryDto> {
+  return apiFetchAuth<PermissionSummaryDto>("/permissions", {
+    method: "POST",
+    body: JSON.stringify(dto),
+  });
+}
+
+export async function updatePermission(id: string, dto: UpdatePermissionDto): Promise<PermissionSummaryDto> {
+  return apiFetchAuth<PermissionSummaryDto>(`/permissions/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(dto),
+  });
+}
+
+export async function deletePermission(id: string): Promise<void> {
+  await apiFetchAuth<void>(`/permissions/${id}`, { method: "DELETE" });
+}
+
+export type CreateUserDto = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  role?: string;
+};
+
+export async function createUser(dto: CreateUserDto): Promise<UserResponseDto> {
+  return apiFetchAuth<UserResponseDto>("/users", {
+    method: "POST",
+    body: JSON.stringify(dto),
+  });
+}
+
+export async function fetchAccountByNumber(number: string): Promise<AccountResponseDto> {
+  return apiFetchAuth<AccountResponseDto>(`/accounts/by-number/${encodeURIComponent(number)}`);
 }

@@ -49,72 +49,74 @@
 }
 
 :root {
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  /* Light theme tokens (defaults) */
+  --card: #ffffff;
+  --card-foreground: #0f1720;
+  --popover: #ffffff;
+  --popover-foreground: #0f1720;
+  --primary: #2563eb; /* vivid blue for buttons */
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f1720;
+  --muted: #f8fafc;
+  --muted-foreground: #334155;
+  --accent: #06b6d4;
+  --accent-foreground: #052f2f;
+  --destructive: #ef4444;
+  --border: #e6e9ee;
+  --input: #ffffff;
+  --ring: #93c5fd;
+  --chart-1: #0ea5a4;
+  --chart-2: #06b6d4;
+  --chart-3: #7c3aed;
+  --chart-4: #f59e0b;
+  --chart-5: #ef4444;
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0f1720;
+  --sidebar-primary: #2563eb;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #06b6d4;
+  --sidebar-accent-foreground: #052f2f;
+  --sidebar-border: #e6e9ee;
+  --sidebar-ring: #93c5fd;
+  --background: #f8fafc;
+  --foreground: #0f1720;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* Dark theme tokens: dark gray background, cards lighter gray, clear borders */
+  --background: #0b0f12; /* dark charcoal */
+  --foreground: #e6eef6; /* light text */
+  --card: #15181b; /* slightly lighter than background */
+  --card-foreground: #e6eef6;
+  --popover: #171a1d;
+  --popover-foreground: #e6eef6;
+  --primary: #2563eb; /* vivid blue remains for CTA */
+  --primary-foreground: #ffffff;
+  --secondary: #101214;
+  --secondary-foreground: #cbd5e1;
+  --muted: #111316;
+  --muted-foreground: #94a3b8;
+  --accent: #06b6d4;
+  --accent-foreground: #052f2f;
+  --destructive: #ef4444;
+  --border: #2b2f33; /* light border in dark */
+  --input: #0f1316;
+  --ring: #3b82f6;
+  --chart-1: #0ea5a4;
+  --chart-2: #06b6d4;
+  --chart-3: #7c3aed;
+  --chart-4: #f59e0b;
+  --chart-5: #ef4444;
+  --sidebar: #0f1316;
+  --sidebar-foreground: #e6eef6;
+  --sidebar-primary: #2563eb;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #06b6d4;
+  --sidebar-accent-foreground: #052f2f;
+  --sidebar-border: #2b2f33;
+  --sidebar-ring: #3b82f6;
 }
 
 @layer base {
@@ -123,8 +125,17 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Slightly larger base font for readability */
+    font-size: 16px;
   }
   html {
     @apply font-sans;
+    /* Use the CSS variable set by next/font (fallback provided in :root) */
+    font-family: var(--font-sans);
   }
+  /* Headings larger and more legible */
+  h1 { font-size: 2.25rem; line-height: 1.1; }
+  h2 { font-size: 1.75rem; line-height: 1.15; }
+  h3 { font-size: 1.25rem; }
+  p, label, span, a, button, input, select { font-size: 1rem; }
 }
